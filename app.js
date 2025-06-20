@@ -33,7 +33,7 @@ app.use((req, res) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/employee_db', {
+mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
