@@ -6,7 +6,9 @@ A modern, full-featured employee management web application built with Node.js, 
 ![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![EJS](https://img.shields.io/badge/EJS-B4CA65?style=for-the-badge&logo=ejs&logoColor=black)
-Project Live Link:[Live](https://employee-management-3-iyby.onrender.com)
+
+## 🌐 Live Demo
+**[🚀 View Live Application](https://employee-management-3-iyby.onrender.com)**
 ## ✨ Features
 
 ### 🎯 Core Functionality
