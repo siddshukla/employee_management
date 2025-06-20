@@ -8,6 +8,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MONG=process.env.MONGO_URL;
 
 // View engine setup
 app.set('view engine', 'ejs');
@@ -33,7 +34,7 @@ app.use((req, res) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGO_URL, {
+mongoose.connect(process.env.MONGO_URL , {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
