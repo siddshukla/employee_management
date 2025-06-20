@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Employee - Employee Management System</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>✏️ Edit Employee</h1>
+            <p>Update information for <%= employee.name %></p>
+        </div>
+
+        <!-- Error Alert -->
+        <% if (typeof error !== 'undefined') { %>
+            <div class="alert alert-error">
+                ❌ <%= error %>
+            </div>
+        <% } %>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <form action="/edit/<%= employee._id %>" method="POST" id="editEmployeeForm">
+                <div class="form-grid">
+                    <!-- Name (Required) -->
+                    <div class="form-group full-width">
+                        <label class="form-label">👤 Full Name *</label>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            class="form-input" 
+                            placeholder="Enter employee's full name"
+                            value="<%= employee.name %>"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                        >
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label">📧 Email Address</label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            class="form-input" 
+                            placeholder="employee@company.com"
+                            value="<%= employee.email || '' %>"
+                        >
+                    </div>
+
+                    <!-- Position -->
+                    <div class="form-group">
+                        <label class="form-label">💼 Position</label>
+                        <input 
+                            type="text" 
+                            name="position" 
+                            class="form-input" 
+                            placeholder="e.g., Software Developer"
+                            value="<%= employee.position || '' %>"
+                            maxlength="100"
+                        >
+                    </div>
+
+                    <!-- Department -->
+                    <div class="form-group">
+                        <label class="form-label">🏢 Department</label>
+                        <select name="department" class="form-select">
+                            <option value="">Select Department</option>
+                            <% departments.forEach(dept => { %>
+                                <option value="<%= dept %>" <%= employee.department === dept ? 'selected' : '' %>>
+                                    <%= dept %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <!-- Salary -->
+                    <div class="form-group">
+                        <label class="form-label">💰 Salary (Annual)</label>
+                        <input 
+                            type="number" 
+                            name="salary" 
+                            class="form-input" 
+                            placeholder="50000"
+                            min="0"
+                            step="1000"
+                            value="<%= employee.salary || '' %>"
+                        >
+                    </div>
+                </div>
+
+                <!-- Employee Info Display -->
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3>📊 Employee Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <strong>Employee ID:</strong> <%= employee._id %>
+                            </div>
+                            <div>
+                                <strong>Join Date:</strong> <%= employee.formattedJoinDate %>
+                            </div>
+                        </div>
+                        <% if (employee.createdAt) { %>
+                            <div style="margin-top: 0.5rem;">
+                                <strong>Record Created:</strong> 
+                                <%= new Date(employee.createdAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) %>
+                            </div>
+                        <% } %>
+                        <% if (employee.updatedAt && employee.updatedAt.toString() !== employee.createdAt.toString()) { %>
+                            <div style="margin-top: 0.5rem;">
+                                <strong>Last Updated:</strong> 
+                                <%= new Date(employee.updatedAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center" style="margin-top: 2rem;">
+                    <div class="flex gap-2">
+                        <a href="/" class="btn btn-secondary">
+                            ← Back to List
+                        </a>
+                        <a href="/view/<%= employee._id %>" class="btn btn-secondary">
+                            👁️ View Details
+                        </a>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button type="reset" class="btn btn-secondary" onclick="resetForm()">
+                            🔄 Reset Changes
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <span id="submitText">💾 Save Changes</span>
+                            <span id="submitLoading" class="loading hidden"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Danger Zone -->
+            <div class="card" style="margin-top: 2rem; border-left-color: var(--danger-color);">
+                <div class="card-header" style="background: var(--danger-color);">
+                    <h3>⚠️ Danger Zone</h3>
+                </div>
+                <div class="card-body">
+                    <p>Once you remove an employee, there is no going back. Please be certain.</p>
+                    <form action="/delete/<%= employee._id %>" method="POST" style="margin-top: 1rem;" onsubmit="return confirmDelete()">
+                        <button type="submit" class="btn btn-danger">
+                            🗑️ Remove Employee
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store original form values
+        const originalFormData = {};
+        document.querySelectorAll('#editEmployeeForm input, #editEmployeeForm select').forEach(input => {
+            originalFormData[input.name] = input.value;
+        });
+
+        // Reset form to original values
+        function resetForm() {
+            Object.keys(originalFormData).forEach(name => {
+                const input = document.querySelector(`[name="${name}"]`);
+                if (input) {
+                    input.value = originalFormData[name];
+                }
+            });
+        }
+
+        // Form submission handling
+        document.getElementById('editEmployeeForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitLoading = document.getElementById('submitLoading');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
+            
+            // Basic client-side validation
+            const nameInput = document.querySelector('input[name="name"]');
+            const emailInput = document.querySelector('input[name="email"]');
+            
+            if (!nameInput.value.trim()) {
+                e.preventDefault();
+                alert('Please enter the employee name');
+                resetSubmitButton();
+                return false;
+            }
+            
+            if (emailInput.value && !isValidEmail(emailInput.value)) {
+                e.preventDefault();
+                alert('Please enter a valid email address');
+                resetSubmitButton();
+                return false;
+            }
+            
+            function resetSubmitButton() {
+                submitBtn.disabled = false;
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+            }
+            
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+        });
+
+        // Confirm delete function
+        function confirmDelete() {
+            return confirm(`Are you sure you want to remove <%= employee.name %>? This action cannot be undone.`);
+        }
+
+        // Auto-format salary input
+        document.querySelector('input[name="salary"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value) {
+                e.target.value = value;
+            }
+        });
+
+        // Track form changes
+        let hasUnsavedChanges = false;
+        document.querySelectorAll('#editEmployeeForm input, #editEmployeeForm select').forEach(input => {
+            input.addEventListener('input', function() {
+                hasUnsavedChanges = (this.value !== originalFormData[this.name]);
+                updateFormState();
+            });
+        });
+
+        function updateFormState() {
+            const submitBtn = document.getElementById('submitBtn');
+            const resetBtn = document.querySelector('button[type="reset"]');
+            
+            if (hasUnsavedChanges) {
+                submitBtn.style.opacity = '1';
+                resetBtn.style.opacity = '1';
+            } else {
+                submitBtn.style.opacity = '0.7';
+                resetBtn.style.opacity = '0.7';
+            }
+        }
+
+        // Warn about unsaved changes
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        });
+    </script>
+</body>
+</html>

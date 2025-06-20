@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= employee.name %> - Employee Details</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>👤 Employee Details</h1>
+            <p>Complete information for <%= employee.name %></p>
+        </div>
+
+        <!-- Employee Profile Card -->
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-header">
+                <div class="flex justify-between items-center">
+                    <h2><%= employee.name %></h2>
+                    <div class="flex gap-2">
+                        <a href="/edit/<%= employee._id %>" class="btn btn-primary">
+                            ✏️ Edit
+                        </a>
+                        <form action="/delete/<%= employee._id %>" method="POST" style="display: inline;" onsubmit="return confirmDelete()">
+                            <button type="submit" class="btn btn-danger">
+                                🗑️ Remove
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- Employee Information Grid -->
+                <div class="form-grid" style="gap: 2rem;">
+                    <!-- Contact Information -->
+                    <div class="card">
+                        <div class="card-header" style="padding: 1rem; background: linear-gradient(135deg, #10b981, #059669);">
+                            <h3>📞 Contact Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="employee-info">
+                                <div class="info-row">
+                                    <strong>📧 Email:</strong>
+                                    <% if (employee.email) { %>
+                                        <a href="mailto:<%= employee.email %>" style="color: var(--primary-color);">
+                                            <%= employee.email %>
+                                        </a>
+                                    <% } else { %>
+                                        <span style="color: var(--text-light);">Not provided</span>
+                                    <% } %>
+                                </div>
+                                <div class="info-row">
+                                    <strong>📱 Phone:</strong>
+                                    <% if (employee.phone) { %>
+                                        <a href="tel:<%= employee.phone %>" style="color: var(--primary-color);">
+                                            <%= employee.phone %>
+                                        </a>
+                                    <% } else { %>
+                                        <span style="color: var(--text-light);">Not provided</span>
+                                    <% } %>
+                                </div>
+                                <div class="info-row">
+                                    <strong>🏠 Address:</strong>
+                                    <% if (employee.address) { %>
+                                        <span><%= employee.address %></span>
+                                    <% } else { %>
+                                        <span style="color: var(--text-light);">Not provided</span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Information -->
+                    <div class="card">
+                        <div class="card-header" style="padding: 1rem; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                            <h3>💼 Job Information</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="employee-info">
+                                <div class="info-row">
+                                    <strong>👔 Position:</strong>
+                                    <span><%= employee.position || 'Not specified' %></span>
+                                </div>
+                                <div class="info-row">
+                                    <strong>🏢 Department:</strong>
+                                    <% if (employee.department) { %>
+                                        <span class="department-badge"><%= employee.department %></span>
+                                    <% } else { %>
+                                        <span style="color: var(--text-light);">Not assigned</span>
+                                    <% } %>
+                                </div>
+                                <div class="info-row">
+                                    <strong>💰 Salary:</strong>
+                                    <% if (employee.salary) { %>
+                                        <span style="font-weight: 600; color: var(--accent-color);">
+                                            $<%= employee.salary.toLocaleString() %> / year
+                                        </span>
+                                    <% } else { %>
+                                        <span style="color: var(--text-light);">Not disclosed</span>
+                                    <% } %>
+                                </div>
+                                <div class="info-row">
+                                    <strong>👥 Manager:</strong>
+                                    <% if (employee.manager) { %>
+                                        <span><%= employee.manager %></span>
+                                    <% } else { %>
+                                        <span style="color: var(--text-light);">Not assigned</span>
+                                    <% } %>
+                                </div>
+                                <div class="info-row">
+                                    <strong>⏰ Employment Type:</strong>
+                                    <span class="employment-badge <%= employee.employmentType ? employee.employmentType.toLowerCase() : 'not-specified' %>">
+                                        <%= employee.employmentType || 'Not specified' %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Information -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <h3>📅 Timeline</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-marker">🎯</div>
+                                <div class="timeline-content">
+                                    <strong>Joined Company</strong>
+                                    <div class="timeline-date"><%= employee.formattedJoinDate %></div>
+                                    <div class="timeline-description">
+                                        <%= employee.name %> became part of our team
+                                        <% if (employee.department) { %>
+                                            in the <%= employee.department %> department
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <% if (employee.createdAt) { %>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">📝</div>
+                                    <div class="timeline-content">
+                                        <strong>Record Created</strong>
+                                        <div class="timeline-date">
+                                            <%= new Date(employee.createdAt).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            }) %>
+                                        </div>
+                                        <div class="timeline-description">Employee profile was added to the system</div>
+                                    </div>
+                                </div>
+                            <% } %>
+                            
+                            <% if (employee.updatedAt && employee.updatedAt.toString() !== employee.createdAt.toString()) { %>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker">🔄</div>
+                                    <div class="timeline-content">
+                                        <strong>Last Updated</strong>
+                                        <div class="timeline-date">
+                                            <%= new Date(employee.updatedAt).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            }) %>
+                                        </div>
+                                        <div class="timeline-description">Employee information was last modified</div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Information -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #6b7280, #4b5563);">
+                        <h3>🔧 System Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="system-info-grid">
+                            <div class="info-item">
+                                <strong>Employee ID:</strong>
+                                <code><%= employee._id %></code>
+                            </div>
+                            <div class="info-item">
+                                <strong>Status:</strong>
+                                <span class="status-badge <%= employee.isActive ? 'active' : 'inactive' %>">
+                                    <%= employee.isActive ? '🟢 Active' : '🔴 Inactive' %>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav" style="margin-top: 2rem;">
+            <a href="/" class="btn btn-secondary">
+                ← Back to Employee List
+            </a>
+            <a href="/edit/<%= employee._id %>" class="btn btn-primary">
+                ✏️ Edit Employee
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function confirmDelete() {
+            return confirm(`Are you sure you want to remove <%= employee.name %>? This action cannot be undone.`);
+        }
+    </script>
+
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #6b7280;
+            --accent-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+            --background: #ffffff;
+            --background-alt: #f8fafc;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-light: #9ca3af;
+            --border-color: #e5e7eb;
+            --border-radius: 8px;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background-alt);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1.1rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .department-badge {
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .employment-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .employment-badge.full-time {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .employment-badge.part-time {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .employment-badge.contract {
+            background: #ddd6fe;
+            color: #5b21b6;
+        }
+
+        .employment-badge.not-specified {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -2rem;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            background: var(--background);
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            z-index: 1;
+        }
+        
+        .timeline-content {
+            background: var(--background-alt);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .timeline-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+        }
+        
+        .timeline-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .system-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .system-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-badge.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        code {
+            background: var(--background-alt);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .nav {
+                flex-direction: column;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .card-header .flex {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #1f2937;
+                --background-alt: #111827;
+                --text-primary: #f9fafb;
+                --text-secondary: #d1d5db;
+                --text-light: #9ca3af;
+                --border-color: #374151;
+            }
+        }
+    </style>
+</body>
+</html>

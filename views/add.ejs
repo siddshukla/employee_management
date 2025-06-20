@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Employee - Employee Management System</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>➕ Add New Employee</h1>
+            <p>Add a new team member to your organization</p>
+        </div>
+
+        <!-- Error Alert -->
+        <% if (typeof error !== 'undefined') { %>
+            <div class="alert alert-error">
+                ❌ <%= error %>
+            </div>
+        <% } %>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <form action="/add" method="POST" id="addEmployeeForm">
+                <div class="form-grid">
+                    <!-- Name (Required) -->
+                    <div class="form-group full-width">
+                        <label class="form-label">👤 Full Name *</label>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            class="form-input" 
+                            placeholder="Enter employee's full name"
+                            value="<%= typeof formData !== 'undefined' ? (formData.name || '') : '' %>"
+                            required
+                            minlength="2"
+                            maxlength="50"
+                        >
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label">📧 Email Address</label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            class="form-input" 
+                            placeholder="employee@company.com"
+                            value="<%= typeof formData !== 'undefined' ? (formData.email || '') : '' %>"
+                        >
+                    </div>
+
+                    <!-- Position -->
+                    <div class="form-group">
+                        <label class="form-label">💼 Position</label>
+                        <input 
+                            type="text" 
+                            name="position" 
+                            class="form-input" 
+                            placeholder="e.g., Software Developer"
+                            value="<%= typeof formData !== 'undefined' ? (formData.position || '') : '' %>"
+                            maxlength="100"
+                        >
+                    </div>
+
+                    <!-- Department -->
+                    <div class="form-group">
+                        <label class="form-label">🏢 Department</label>
+                        <select name="department" class="form-select">
+                            <option value="">Select Department</option>
+                            <% departments.forEach(dept => { %>
+                                <option value="<%= dept %>" 
+                                    <%= (typeof formData !== 'undefined' && formData.department === dept) ? 'selected' : '' %>>
+                                    <%= dept %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <!-- Salary -->
+                    <div class="form-group">
+                        <label class="form-label">💰 Salary (Annual)</label>
+                        <input 
+                            type="number" 
+                            name="salary" 
+                            class="form-input" 
+                            placeholder="50000"
+                            min="0"
+                            step="1000"
+                            value="<%= typeof formData !== 'undefined' ? (formData.salary || '') : '' %>"
+                        >
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center mt-2" style="margin-top: 2rem;">
+                    <a href="/" class="btn btn-secondary">
+                        ← Back to List
+                    </a>
+                    
+                    <div class="flex gap-2">
+                        <button type="reset" class="btn btn-secondary">
+                            🔄 Reset Form
+                        </button>
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <span id="submitText">✅ Add Employee</span>
+                            <span id="submitLoading" class="loading hidden"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and submission handling
+        document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitLoading = document.getElementById('submitLoading');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
+            
+            // Basic client-side validation
+            const nameInput = document.querySelector('input[name="name"]');
+            const emailInput = document.querySelector('input[name="email"]');
+            
+            if (!nameInput.value.trim()) {
+                e.preventDefault();
+                alert('Please enter the employee name');
+                resetSubmitButton();
+                return false;
+            }
+            
+            if (emailInput.value && !isValidEmail(emailInput.value)) {
+                e.preventDefault();
+                alert('Please enter a valid email address');
+                resetSubmitButton();
+                return false;
+            }
+            
+            function resetSubmitButton() {
+                submitBtn.disabled = false;
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+            }
+            
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+        });
+
+        // Auto-format salary input
+        document.querySelector('input[name="salary"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value) {
+                e.target.value = value;
+            }
+        });
+
+        // Character counter for name field
+        const nameInput = document.querySelector('input[name="name"]');
+        const nameGroup = nameInput.closest('.form-group');
+        
+        function updateCharacterCount() {
+            const existingCounter = nameGroup.querySelector('.char-counter');
+            if (existingCounter) {
+                existingCounter.remove();
+            }
+            
+            const count = nameInput.value.length;
+            const maxLength = nameInput.getAttribute('maxlength');
+            
+            if (count > 0) {
+                const counter = document.createElement('small');
+                counter.className = 'char-counter';
+                counter.style.color = count >= maxLength * 0.9 ? '#ef4444' : '#6b7280';
+                counter.textContent = `${count}/${maxLength} characters`;
+                nameGroup.appendChild(counter);
+            }
+        }
+        
+        nameInput.addEventListener('input', updateCharacterCount);
+    </script>
+</body>
+</html>
