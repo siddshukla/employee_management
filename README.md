@@ -190,7 +190,7 @@ open coverage/lcov-report/index.html
 
 ### 📸 Test Coverage Screenshot
 
-![Test Coverage Screenshot](https://github.com/shivangisaraf/shivangisaraf/blob/main/dem.jpg)
+![Test Coverage Screenshot](https://github.com/siddshukla/siddshukla/blob/main/sem.png)
 
 ### ✅ Test Results Summary
 
