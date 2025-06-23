@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Employee = require('../models/employee');
 
+const departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations', 'Other'];
+
 // Home page - List all employees
 router.get('/', async (req, res) => {
     try {
         const { search, department, sort } = req.query;
         let query = { isActive: true };
-        
-        // Search functionality
+
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
@@ -16,33 +17,22 @@ router.get('/', async (req, res) => {
                 { position: { $regex: search, $options: 'i' } }
             ];
         }
-        
-        // Filter by department
+
         if (department && department !== 'all') {
             query.department = department;
         }
-        
-        // Sorting
-        let sortOption = {};
-        switch (sort) {
-            case 'name':
-                sortOption = { name: 1 };
-                break;
-            case 'date':
-                sortOption = { joinDate: -1 };
-                break;
-            case 'salary':
-                sortOption = { salary: -1 };
-                break;
-            default:
-                sortOption = { createdAt: -1 };
-        }
-        
+
+        const sortOption = {
+            name: { name: 1 },
+            date: { joinDate: -1 },
+            salary: { salary: -1 },
+            default: { createdAt: -1 }
+        }[sort] || { createdAt: -1 };
+
         const employees = await Employee.find(query).sort(sortOption);
-        const departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations', 'Other'];
-        
-        res.render('index', { 
-            employees, 
+
+        res.render('index', {
+            employees,
             departments,
             currentSearch: search || '',
             currentDepartment: department || 'all',
@@ -56,7 +46,6 @@ router.get('/', async (req, res) => {
 
 // Show add employee form
 router.get('/add', (req, res) => {
-    const departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations', 'Other'];
     res.render('add', { departments });
 });
 
@@ -64,22 +53,23 @@ router.get('/add', (req, res) => {
 router.post('/add', async (req, res) => {
     try {
         const { name, email, position, salary, department } = req.body;
-        
-        const employeeData = { name };
-        if (email) employeeData.email = email;
-        if (position) employeeData.position = position;
-        if (salary) employeeData.salary = parseFloat(salary);
-        if (department) employeeData.department = department;
-        
+
+        const employeeData = {
+            name,
+            email: email || undefined,
+            position: position || undefined,
+            salary: salary ? parseFloat(salary) : undefined,
+            department: department || undefined
+        };
+
         await Employee.create(employeeData);
         res.redirect('/?success=Employee added successfully');
     } catch (error) {
-        console.error('Error adding employee:', error);
-        const departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations', 'Other'];
-        res.render('add', { 
+        console.error('Error adding employee:', error.message);
+        res.status(400).render('add', {
             error: error.message,
             departments,
-            formData: req.body 
+            formData: req.body
         });
     }
 });
@@ -91,7 +81,6 @@ router.get('/edit/:id', async (req, res) => {
         if (!employee) {
             return res.status(404).render('error', { error: 'Employee not found' });
         }
-        const departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations', 'Other'];
         res.render('edit', { employee, departments });
     } catch (error) {
         console.error(error);
@@ -103,31 +92,33 @@ router.get('/edit/:id', async (req, res) => {
 router.post('/edit/:id', async (req, res) => {
     try {
         const { name, email, position, salary, department } = req.body;
-        
-        const updateData = { name };
-        if (email) updateData.email = email;
-        if (position) updateData.position = position;
-        if (salary) updateData.salary = parseFloat(salary);
-        if (department) updateData.department = department;
-        
-        await Employee.findByIdAndUpdate(req.params.id, updateData, { 
-            new: true, 
-            runValidators: true 
+
+        const updateData = {
+            name,
+            email: email || undefined,
+            position: position || undefined,
+            salary: salary ? parseFloat(salary) : undefined,
+            department: department || undefined
+        };
+
+        await Employee.findByIdAndUpdate(req.params.id, updateData, {
+            new: true,
+            runValidators: true
         });
+
         res.redirect('/?success=Employee updated successfully');
     } catch (error) {
-        console.error('Error updating employee:', error);
+        console.error('Error updating employee:', error.message);
         const employee = await Employee.findById(req.params.id);
-        const departments = ['HR', 'Engineering', 'Marketing', 'Sales', 'Finance', 'Operations', 'Other'];
-        res.render('edit', { 
-            employee, 
+        res.status(400).render('edit', {
+            employee,
             departments,
-            error: error.message 
+            error: error.message
         });
     }
 });
 
-// Delete employee
+// Delete employee (soft delete)
 router.post('/delete/:id', async (req, res) => {
     try {
         await Employee.findByIdAndUpdate(req.params.id, { isActive: false });
@@ -158,7 +149,8 @@ router.get('/api/employees', async (req, res) => {
         const employees = await Employee.find({ isActive: true });
         res.json(employees);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch employees' });
     }
 });
 
