@@ -9,7 +9,6 @@ A modern, full-featured employee management web application built with Node.js, 
 ![Jest](https://img.shields.io/badge/Jest-323330?style=for-the-badge&logo=Jest&logoColor=white)
 ![Test Coverage](https://img.shields.io/badge/Coverage-90%25-brightgreen?style=for-the-badge)
 ![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 ## 🌐 Live Demo
 **[🚀 View Live Application](https://employee-management-3-iyby.onrender.com)**
